@@ -1,0 +1,25 @@
+{
+  "name": "BEAST — Coach de Charline",
+  "short_name": "BEAST",
+  "description": "Coach perso : repas, muscu, compléments, progression gamifiée.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070D09",
+  "theme_color": "#070D09",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
