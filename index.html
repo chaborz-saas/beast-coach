@@ -434,7 +434,8 @@
     <p class="note" id="pfMsg">Tes cibles kcal/macros sont recalculées à partir de ces valeurs (Mifflin-St Jeor × activité + surplus).</p>
   </div>
   <div class="card">
-    <h2>🔬 La science derrière le plan</h2>
+    <h2>🔬 Bibliothèque — toute la science muscu</h2>
+    <p class="note" style="margin:0 0 10px">L'essentiel prouvé sur l'hypertrophie, classé par thème. Touche pour déplier — chaque point dit aussi comment c'est appliqué dans TON plan.</p>
     <div id="sciList"></div>
   </div>
 </div></section>
@@ -624,17 +625,52 @@ const BADGES=[
  {id:'creat',em:'🧪',n:'Créatine 14j',chk:s=>s.creatDays>=14}
 ];
 
+/* Bibliothèque science : [catégorie, titre, explication + application pratique] */
 const SCI=[
- ['Surplus modéré pour le muscle, pas le gras','Garthe 2013 / Helms : +250-500 kcal suffit ; un gros surplus ajoute surtout du gras chez le pratiquant entraîné.'],
- ['Volume : 10-20 séries/muscle/semaine','Pelland 2024 (67 études) : la relation volume→croissance est positive avec rendements décroissants. On monte progressivement bloc par bloc.'],
- ['Fréquence 2×/semaine par muscle','Schoenfeld 2016 : 2×/sem > 1×/sem à volume égal. D\'où le PPL ×2.'],
- ['Proche de l\'échec, pas forcément à l\'échec','Refalo 2023 : rester à 0-3 reps en réserve donne quasi le même résultat que l\'échec avec moins de fatigue. L\'échec : sur les isolations.'],
- ['Charges lourdes ET légères font du muscle','Schoenfeld 2017 : 5 à 30 reps, tout marche si la série est dure. Le lourd reste roi pour la force.'],
- ['Repos 2-3 min sur les gros mouvements','Schoenfeld 2016 : 3 min > 1 min pour muscle et force.'],
- ['Protéines 1,6-2,2 g/kg/jour','Morton 2018 (49 essais) : plateau à ~1,6 g/kg ; 2,0 g/kg = zone de confort. Caséine le soir : utile.'],
- ['Créatine 5 g/jour, tous les jours','ISSN 2017 : le supplément le plus prouvé de l\'histoire (force, masse, récup).'],
- ['Cardio : vélo plutôt que course, séparé des jambes','Schumann 2022 : interférence faible et minimisée avec le vélo et en éloignant le cardio des séances jambes.'],
- ['Sommeil 7-9 h : non négociable','La privation de sommeil ampute la synthèse protéique et la testostérone. Le tracking sommeil est dans l\'app pour ça.'],
+ // ENTRAÎNEMENT — variables principales
+ ['🏋️ Entraînement','Volume = moteur n°1 de la croissance','Pelland 2024 (67 études, 2 058 sujets) : relation dose-réponse positive volume→hypertrophie, avec rendements décroissants. ~10 séries/muscle/sem = solide, jusqu\'à ~20+ pour aller chercher le maximum. APPLI : le macrocycle monte le volume ~12→18 séries/muscle bloc après bloc.'],
+ ['🏋️ Entraînement','Fréquence 2×/semaine par muscle','Schoenfeld 2016 (méta) : à volume égal, 2×/sem > 1×/sem. Au-delà, la fréquence sert surtout à répartir le volume sans séances interminables. APPLI : c\'est tout le principe du PPL ×2.'],
+ ['🏋️ Entraînement','Proche de l\'échec ≥ échec systématique','Refalo 2023 (méta) : rester à 0-3 reps en réserve (RIR) donne quasi le même gain musculaire que l\'échec, avec bien moins de fatigue et de risque. APPLI : RIR programmé par bloc ; l\'échec réservé aux isolations (slots 4-6).'],
+ ['🏋️ Entraînement','Charges lourdes ET légères font du muscle','Schoenfeld 2017 (méta) : de ~5 à ~30 reps, l\'hypertrophie est similaire SI la série est menée proche de l\'échec. Le lourd reste supérieur pour la force pure. APPLI : gros mouvements 5-10 reps, isolations 12-20.'],
+ ['🏋️ Entraînement','Amplitude complète, et l\'atout "lengthened partials"','L\'amplitude complète (gros étirement en bas) bat l\'amplitude partielle classique. Récent (2024-25) : les "lengthened partials" (demi-reps dans la portion étirée) font AU MOINS aussi bien que le ROM complet, peut-être un peu mieux — mais l\'incertitude reste réelle. APPLI : priorité aux exos qui chargent le muscle étiré (curl incliné, RDL, écarté, presse profonde).'],
+ ['🏋️ Entraînement','Repos 2-3 min sur les gros, ~90 s sur l\'iso','Schoenfeld 2016 : 3 min > 1 min pour muscle ET force sur les mouvements composés (plus de volume de qualité). APPLI : le timer de l\'app démarre à 2:30 sur les 2 premiers slots, 1:30 sur le reste.'],
+ ['🏋️ Entraînement','Tempo : contrôle l\'excentrique, n\'exagère pas','Méta (Schoenfeld) : ralentir à l\'extrême (>4 s) n\'aide pas. 1-3 s en descente contrôlée = optimal ; pas besoin de compter. APPLI : "descente lente, montée explosive".'],
+ ['🏋️ Entraînement','Surcharge progressive = la loi','Le muscle ne grandit que si la contrainte augmente dans le temps (plus de charge, de reps, ou de séries). APPLI : double progression — monte les reps jusqu\'au haut de la fourchette, puis ajoute du poids. L\'app garde l\'historique et tes PR pour ça.'],
+ ['🏋️ Entraînement','Périodisation & deload','Programmer des phases (volume↗, intensité↗) et des semaines allégées prévient la stagnation et le surentraînement. APPLI : 4 blocs de 5 semaines, deload automatique en semaine 5.'],
+ ['🏋️ Entraînement','Connexion muscle-cible (mind-muscle)','Se concentrer sur le muscle travaillé (sur les isolations) augmente son activation et la croissance locale (Schoenfeld 2018). APPLI : sur les latérales/curls, "sens le muscle", pas juste déplacer la charge.'],
+ ['🏋️ Entraînement','Ordre des exercices','On place en premier ce qui compte le plus ce jour-là (le plus lourd ou la priorité), car la performance baisse avec la fatigue. APPLI : slots ordonnés du plus lourd/prioritaire au finisher.'],
+ ['🏋️ Entraînement','Techniques d\'intensité (drop sets, rest-pause)','Utiles pour ajouter du volume effectif en peu de temps sur les isolations ; à ne pas abuser sur les gros mouvements (fatigue/risque). APPLI : drop set sur la dernière série de latérales, surtout en Bloc 3.'],
+
+ // NUTRITION
+ ['🍽️ Nutrition','Surplus calorique modéré','Garthe 2013 / consensus : +250-500 kcal suffit pour construire du muscle ; un gros surplus ajoute surtout du gras chez le pratiquant. APPLI : +~300 kcal au-dessus du TDEE = ton lean bulk.'],
+ ['🍽️ Nutrition','Protéines 1,6-2,2 g/kg/jour','Morton 2018 (49 essais) : plateau des gains vers ~1,6 g/kg ; 2,0 g/kg = marge de confort. APPLI : ta cible protéines = poids × 2.'],
+ ['🍽️ Nutrition','Répartition : 3-5 prises de 0,4 g/kg','Stimuler la synthèse protéique plusieurs fois/jour (~20-40 g par prise) bat une seule grosse dose (Schoenfeld/Aragon). APPLI : 5 repas protéinés répartis.'],
+ ['🍽️ Nutrition','Le "timing" compte peu, le total compte','La "fenêtre anabolique" est large (plusieurs heures) : l\'apport quotidien total prime largement sur le moment exact. APPLI : ne stresse pas pour le shake "dans les 30 min" ; vise ton total.'],
+ ['🍽️ Nutrition','Caséine lente avant la nuit','Une protéine lente au coucher soutient la synthèse pendant le sommeil (Res 2012). APPLI : 250 g de fromage blanc à 22h15 dans ton plan.'],
+ ['🍽️ Nutrition','Glucides = carburant de la performance','Reconstituent le glycogène, soutiennent l\'intensité et la récup. Indispensables en prise de muscle. APPLI : ~500 g/j dans tes macros, concentrés autour de l\'entraînement.'],
+ ['🍽️ Nutrition','Lipides ≥ 0,8 g/kg pour les hormones','Trop bas, ça pénalise la testostérone. APPLI : ~0,9 g/kg dans tes macros.'],
+ ['🍽️ Nutrition','Fibres + micronutriments','Légumes/fruits = digestion, satiété, récup. Souvent négligés en prise de masse. APPLI : "légumes à volonté" sur déjeuner et dîner.'],
+
+ // COMPLÉMENTS (par niveau de preuve)
+ ['💊 Compléments','Créatine monohydrate 3-5 g/j','ISSN 2017 : LE supplément le plus prouvé (force, masse, récup, cognition). Tous les jours, même repos. Sûr sur le long terme. APPLI : 5 g post-training, tracké.'],
+ ['💊 Compléments','Caféine : performance immédiate','3-6 mg/kg ~45-60 min avant : force, endurance, focus (méta solides). APPLI : 200 mg en pré-training, pas après 16h si tu dors mal.'],
+ ['💊 Compléments','Protéine en poudre (whey/caséine)','Pas "magique" : un simple outil pratique pour atteindre ta cible protéines. APPLI : whey post-training, caséine/fromage blanc le soir.'],
+ ['💊 Compléments','Citrulline & bêta-alanine : effet modéré','Citrulline (6-8 g) : pump/endurance. Bêta-alanine (3-5 g/j) : endurance sur séries longues (15-25 reps). Preuves correctes, effet modeste. APPLI : citrulline en pré-training.'],
+ ['💊 Compléments','Vitamine D & oméga-3 : santé/récup','Surtout correctifs si carence (très fréquent pour la D). Soutiennent récup, immunité, hormones. APPLI : D3 2000 UI + oméga-3 au petit-déj.'],
+ ['💊 Compléments','Ce qui NE marche pas (ou pas prouvé)','BCAA (inutiles si tu manges assez de protéines), "testo boosters" en vente libre, la plupart des "fat burners". Économise ton argent. APPLI : zéro dans ton plan.'],
+ ['💊 Compléments','⛔ Dopage (stéroïdes/SARMs)','Oui ça construit du muscle — au prix de risques cardiaques, hépatiques et hormonaux graves, et c\'est interdit. Hors de question dans ce plan : le naturel bien exécuté suffit largement pour ton objectif.'],
+
+ // RÉCUPÉRATION & MODE DE VIE
+ ['😴 Récup & vie','Sommeil 7-9 h : non négociable','La privation de sommeil réduit la synthèse protéique, augmente le cortisol et baisse la testostérone (Leproult 2011). C\'est un "anabolisant" gratuit. APPLI : tracking sommeil + alerte sous 7h.'],
+ ['😴 Récup & vie','Le muscle pousse au REPOS','La séance crée le stimulus ; la croissance se fait pendant la récupération. Sans récup suffisante, pas de surcompensation. APPLI : 1 jour off complet (dimanche) + deload programmé.'],
+ ['😴 Récup & vie','Gérer le stress (cortisol chronique)','Un stress chronique élevé nuit à la récup et à la composition corporelle. APPLI : ashwagandha optionnel, sommeil, marche — tout est dans l\'app.'],
+ ['😴 Récup & vie','Hydratation','La déshydratation baisse force et performance. APPLI : objectif 10 verres/jour tracké (anneau eau).'],
+ ['😴 Récup & vie','Constance > perfection','La régularité sur des mois bat n\'importe quel "programme parfait" suivi 2 semaines. La donnée la plus robuste de tout le fitness. APPLI : streak, XP, trophées — tout pousse à revenir.'],
+ ['😴 Récup & vie','Mémoire musculaire (myonoyaux)','Après une pause, le muscle déjà construit revient bien plus vite (Gundersen, Rahmati 2022 : les myonoyaux persistent). APPLI : ta reprise sera rapide — exploite-la sans te blesser au départ.'],
+
+ // CARDIO
+ ['🚴 Cardio','Interférence : faible et gérable','Schumann 2022 : le cardio nuit peu à l\'hypertrophie s\'il est bien placé. La course (excentrique) interfère plus que le vélo. APPLI : vélo/rameur privilégiés, cardio éloigné des jours de jambes.'],
+ ['🚴 Cardio','Zone 2 + un peu de HIIT','Le travail facile (zone 2) développe la base cardio sans fatiguer ; un peu de HIIT pour le VO2max. Bon pour la santé et la récup. APPLI : 2 séances zone 2 + 1 HIIT/semaine.'],
 ];
 
 /* ================== STOCKAGE ================== */
@@ -841,7 +877,11 @@ function renderPlan(){
  });
  document.getElementById('pfW').value=p.w;document.getElementById('pfH').value=p.h;document.getElementById('pfA').value=p.age;
  const sc=document.getElementById('sciList');sc.innerHTML='';
- SCI.forEach(s=>{const d=document.createElement('details');d.innerHTML=`<summary>${s[0]}</summary><div class="recipe2">${s[1]}</div>`;sc.appendChild(d)});
+ const cats=[];SCI.forEach(s=>{if(!cats.includes(s[0]))cats.push(s[0])});
+ cats.forEach(cat=>{
+  const hd=document.createElement('div');hd.className='mealhd';hd.textContent=cat;sc.appendChild(hd);
+  SCI.filter(s=>s[0]===cat).forEach(s=>{const d=document.createElement('details');d.innerHTML=`<summary><span>${s[1]}</span></summary><div class="recipe2">${s[2]}</div>`;sc.appendChild(d)});
+ });
 }
 function saveProfile(){
  const w=parseFloat(document.getElementById('pfW').value),h=parseFloat(document.getElementById('pfH').value),a=parseFloat(document.getElementById('pfA').value);
