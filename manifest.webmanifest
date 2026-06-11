@@ -1,7 +1,7 @@
 {
-  "name": "BEAST — Coach de Charline",
+  "name": "BEAST — Coach de Félix",
   "short_name": "BEAST",
-  "description": "Coach perso : repas, muscu, compléments, progression gamifiée.",
+  "description": "Coach perso : muscu périodisée, nutrition lean bulk, sommeil, compléments — transformation totale.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
