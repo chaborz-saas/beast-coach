@@ -285,6 +285,7 @@
 
 <!-- AUJOURD'HUI -->
 <section class="view active" id="v-today"><div class="wrap">
+  <div class="card" id="nowCard" style="border-color:rgba(255,201,75,.35)"></div>
   <div class="card hero">
     <div class="ey">Mission du jour<span class="wkchip" id="weekLabel"></span></div>
     <div class="disp mtitle" id="todaySession">—</div>
@@ -348,6 +349,15 @@
   </div>
 
   <div class="card">
+    <h2>💪 Forme du jour</h2>
+    <div class="lbl" style="margin-bottom:6px">Courbatures ce matin ?</div>
+    <div class="qbtns" id="soreBtns">
+      <button data-s="0" style="font-size:13px;font-weight:800">😎 Aucune</button><button data-s="1" style="font-size:13px;font-weight:800">🙂 Normales</button><button data-s="2" style="font-size:13px;font-weight:800">🥵 Fortes</button>
+    </div>
+    <p class="note" id="soreMsg">Croisé avec ton sommeil → autorégulation : forme basse = l'app allège ta séance toute seule (-1 série sur les isolations).</p>
+  </div>
+
+  <div class="card">
     <h2>🍽️ Tes 5 repas du jour</h2>
     <div id="todayMeals"></div>
     <p class="note">Coche = +XP, remplit tes macros. Quantités exactes dans l'onglet Repas.</p>
@@ -390,7 +400,8 @@
       <div class="tcell"><b class="num" id="nutF">—</b><span>Lip (g)</span></div>
       <div class="tcell"><b class="num" id="nutTdee">—</b><span>TDEE</span></div>
     </div>
-    <p class="note">Surplus ≈ +300 kcal au-dessus de ta dépense (TDEE) : tu construis du muscle en limitant le gras. Cible : <b style="color:var(--limeL)">+0,25 à 0,5 % du poids / semaine</b> (~0,2-0,4 kg). Si la balance monte plus vite → on coupe 150 kcal. Si elle stagne 2 sem → on ajoute 150.</p>
+    <p class="note">Surplus ≈ +300 kcal au-dessus de ta dépense (TDEE) : muscle sans gras inutile. Cible : <b style="color:var(--limeL)">+0,25 à 0,5 % du poids / semaine</b>. <b style="color:var(--gold)">L'app s'auto-ajuste</b> : ta pesée hebdo pilote les calories (±150) toute seule.</p>
+    <p class="note" id="adjNote"></p>
   </div>
   <div class="card">
     <h2>🍱 Les 5 repas — quantités exactes</h2>
@@ -404,6 +415,12 @@
     <h2>🛒 Les basiques à toujours avoir</h2>
     <div id="staples"></div>
     <p class="note">Riz, avoine, poulet, bœuf 5%, œufs, skyr, fromage blanc : tes munitions. Tu manques de kcal en fin de journée ? Ajoute une banane + 20 g de beurre de cacahuète (≈290 kcal propres).</p>
+  </div>
+  <div class="card">
+    <h2>🧾 Liste de courses de la semaine (auto)</h2>
+    <div id="shopList"></div>
+    <button class="cta" style="margin-top:12px" onclick="copyShopping()">📋 Copier la liste</button>
+    <p class="note">Générée depuis ton plan exact (5 repas × 7 jours). Colle-la dans l'appli Carrefour — ou envoie-la moi et je passe la commande.</p>
   </div>
 </div></section>
 
@@ -421,15 +438,8 @@
   </div>
   <div class="card">
     <h2>🗓️ Ta semaine type</h2>
-    <table class="weektbl">
-      <tr><td>Lun</td><td>PUSH <div class="cd">pecs · épaules · triceps</div></td></tr>
-      <tr><td>Mar</td><td>PULL + Zone 2 30-40 min vélo <div class="cd">dos · biceps · arrière d'épaules</div></td></tr>
-      <tr><td>Mer</td><td>LEGS <div class="cd">quadris · fessiers · ischios</div></td></tr>
-      <tr><td>Jeu</td><td>PUSH + HIIT 15 min (vélo/rameur) <div class="cd">variantes différentes de lundi</div></td></tr>
-      <tr><td>Ven</td><td>PULL <div class="cd">variantes différentes de mardi</div></td></tr>
-      <tr><td>Sam</td><td>LEGS + 8 000 pas <div class="cd">accent fessiers/ischios</div></td></tr>
-      <tr><td>Dim</td><td>REPOS total <div class="cd">marche légère, prépa repas</div></td></tr>
-    </table>
+    <table class="weektbl" id="weekTbl"></table>
+    <p class="note">Le tableau s'adapte à ton nombre de jours (profil ci-dessous).</p>
   </div>
   <div class="card">
     <h2>👤 Ton profil (modifiable)</h2>
@@ -437,6 +447,10 @@
       <div><div class="lbl" style="margin-bottom:5px">Poids (kg)</div><div class="winput"><input id="pfW" type="number" inputmode="decimal"></div></div>
       <div><div class="lbl" style="margin-bottom:5px">Taille (cm)</div><div class="winput"><input id="pfH" type="number" inputmode="numeric"></div></div>
       <div><div class="lbl" style="margin-bottom:5px">Âge</div><div class="winput"><input id="pfA" type="number" inputmode="numeric"></div></div>
+    </div>
+    <div class="grid2" style="margin-top:8px">
+      <div><div class="lbl" style="margin-bottom:5px">Jours muscu / sem</div><select id="pfD" style="width:100%;border:1px solid var(--line2);background:rgba(7,13,9,.55);color:var(--ink);border-radius:12px;padding:13px;font-size:15px;font-weight:700;font-family:inherit"><option value="3">3 j — Full body</option><option value="4">4 j — Upper / Lower</option><option value="6" selected>6 j — PPL ×2</option></select></div>
+      <div><div class="lbl" style="margin-bottom:5px">Point faible prioritaire</div><select id="pfWk" style="width:100%;border:1px solid var(--line2);background:rgba(7,13,9,.55);color:var(--ink);border-radius:12px;padding:13px;font-size:15px;font-weight:700;font-family:inherit"><option value="équilibré" selected>Équilibré</option><option value="pecs">Pecs</option><option value="dos">Dos</option><option value="épaules">Épaules</option><option value="bras">Bras</option><option value="jambes">Jambes</option></select></div>
     </div>
     <button class="cta ghost" style="margin-top:10px" onclick="saveProfile()">💾 Mettre à jour mes objectifs</button>
     <p class="note" id="pfMsg">Tes cibles kcal/macros sont recalculées à partir de ces valeurs (Mifflin-St Jeor × activité + surplus).</p>
@@ -525,12 +539,12 @@ const START_DATE='2026-06-08'; // lundi de la semaine 1 du macrocycle
 const DB={get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
 const tk=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 
-function getProfile(){return DB.get('profile',{name:'Félix',sex:'M',h:181,w:80,age:23})}
+function getProfile(){return DB.get('profile',{name:'Félix',sex:'M',h:181,w:80,age:23,wake:'07:00',need:8,days:6,weak:'équilibré'})}
 function calcTargets(){
  const p=getProfile();
  const bmr=10*p.w+6.25*p.h-5*p.age+5;          // Mifflin-St Jeor (homme)
  const tdee=Math.round(bmr*1.65);               // 6 entraînements/sem, travail sédentaire
- const kcal=tdee+300;                           // lean bulk : +~300 kcal
+ const kcal=tdee+300+DB.get('kcalAdj',0);       // lean bulk : +~300 kcal, ajusté chaque semaine par ta pesée
  const prot=Math.round(p.w*2);                  // 2,0 g/kg (zone 1,6-2,2 — Morton 2018)
  const fat=Math.round(p.w*0.9);                 // ~0,9 g/kg
  const carbs=Math.round((kcal-prot*4-fat*9)/4); // le reste en glucides (perf)
@@ -541,19 +555,30 @@ function calcTargets(){
 const MEALPLAN=[
  {id:'m0',time:'07:30',n:'Petit-déj de masse',kcal:780,p:45,
   d:"100 g flocons d'avoine + 250 g skyr + 1 banane + 20 g amandes + 15 g miel",
+  alts:["4 œufs brouillés + 80 g pain complet + 1 banane + 15 g miel","Shaker express : 100 g avoine mixée + 30 g whey + 1 banane + 20 g amandes"],
   why:"🔬 45 g de protéines (≈0,55 g/kg) : relance la synthèse protéique après le jeûne de la nuit — 1ʳᵉ des 4-5 prises de ≥0,4 g/kg (Schoenfeld/Aragon)."},
  {id:'m1',time:'12:30',n:'Déjeuner builder',kcal:900,p:50,
   d:"120 g riz basmati (cru) + 180 g poulet (ou bœuf 5%) + légumes à volonté + 12 g huile d'olive",
+  alts:["120 g pâtes (cru) + 180 g bœuf 5% + sauce tomate + parmesan 15 g","Mode resto/RU : bowl ou assiette riz-poulet, demande DOUBLE viande, sauce à part"],
   why:"🔬 Le plus gros bloc de glucides à midi : il recharge le glycogène pour la séance du soir — les glucides sont le carburant de la performance."},
  {id:'m2',time:'17:00',n:'Pré/post-training shake',kcal:620,p:38,
   d:"30 g whey + 70 g avoine mixée + 1 banane + 20 g beurre de cacahuète (shaker)",
+  alts:["2 bananes + 30 g whey + 30 g beurre de cacahuète","200 g skyr + 60 g granola + 15 g miel + poignée d'amandes"],
   why:"🔬 Protéines + glucides autour de l'effort = perf et récup. Pas de panique sur la « fenêtre anabolique » : elle dure des heures, c'est le total du jour qui prime."},
  {id:'m3',time:'20:00',n:'Dîner du jour',kcal:800,p:50,
   d:"La recette du soir (voir liste) — base 120 g riz/féculent cru + 200 g viande",
   why:"🔬 Repas complet post-training : 50 g de protéines + glucides pour la resynthèse du glycogène et la construction pendant la soirée."},
  {id:'m4',time:'22:15',n:'Caséine du soir',kcal:380,p:25,
   d:"250 g fromage blanc + 100 g fruits rouges + 15 g noix — protéine lente pour la nuit",
+  alts:["30 g caséine en shaker + 1 banane + 15 g noix","3 œufs durs + 150 g skyr + quelques amandes"],
   why:"🔬 Protéine lente avant le coucher (Res 2012) : la synthèse protéique reste alimentée pendant les 7-9 h de sommeil — la nuit est ta plus longue fenêtre de croissance."},
+];
+/* Liste de courses hebdo, agrégée depuis le plan (5 repas × 7 j) */
+const SHOPPING=[
+ ['🍚 Féculents',["Riz basmati 1,6 kg","Flocons d'avoine 1,2 kg","Pâtes complètes 150 g","Lentilles 50 g","Pain complet (option petit-déj)"]],
+ ['🥩 Protéines',["Poulet 1,3 kg","Bœuf haché 5% 1 kg","Pavé de saumon 180 g (ou +200 g steak)","Jambon 2 tranches","Œufs ×12","Skyr 4×450 g","Fromage blanc 2×1 kg","Whey : vérifier le stock (~250 g/sem)"]],
+ ['🥦 Légumes & fruits',["Brocolis 250 g","Poivrons ×3","Courgette ×1","Épinards surgelés 400 g","Petits pois 100 g","Tomates cerises + roquette","Oignons ×4 + ail","Citrons ×2","Bananes ×14","Fruits rouges surgelés 700 g"]],
+ ['🥜 Gras & divers',["Amandes 150 g","Noix 120 g","Beurre de cacahuète 150 g","Huile d'olive","Lait de coco 150 ml","Pesto 15 g","Parmesan 35 g","Miel 120 g","Sauce soja","Pulpe de tomate 400 g","Épices : curry, paprika fumé, cumin"]],
 ];
 const DINNERS=[
  {d:'Lun',t:'Poulet teriyaki XL, riz & brocolis',kcal:800,p:52,
@@ -608,8 +633,31 @@ const SLOTS={
   {lbl:'Mollets + abdos',rg:'4×12-20',cue:'Mollets : pause 2 sec en bas. Abdos : crunch poulie ou roulette.',v:['Mollets debout + crunch poulie','Mollets presse + relevés de jambes','Mollets assis + ab wheel']},
  ]
 };
-const SPLIT=['Repos','Push','Pull','Legs','Push','Pull','Legs'];
-const CARDIO=['Marche légère 30 min si envie','—','Zone 2 : 30-40 min vélo/rameur','—','HIIT : 8×30s à fond / 90s easy (vélo)','—','8 000 pas + mobilité 10 min'];
+/* Séances composées à partir des slots (l'historique par variante est partagé entre splits) */
+const R=(s,i)=>({s,i});
+const SESSDEFS={
+ 'Push':[R('Push',0),R('Push',1),R('Push',2),R('Push',3),R('Push',4),R('Push',5)],
+ 'Pull':[R('Pull',0),R('Pull',1),R('Pull',2),R('Pull',3),R('Pull',4),R('Pull',5)],
+ 'Legs':[R('Legs',0),R('Legs',1),R('Legs',2),R('Legs',3),R('Legs',4),R('Legs',5)],
+ 'Upper':[R('Push',0),R('Pull',0),R('Push',1),R('Pull',1),R('Push',3),R('Pull',4)],
+ 'Lower':[R('Legs',0),R('Legs',1),R('Legs',2),R('Legs',3),R('Legs',4),R('Legs',5)],
+ 'Full A':[R('Legs',0),R('Push',0),R('Pull',0),R('Push',3),R('Pull',4)],
+ 'Full B':[R('Legs',1),R('Push',1),R('Pull',1),R('Legs',3),R('Push',5)],
+ 'Full C':[R('Legs',2),R('Push',2),R('Pull',2),R('Pull',3),R('Legs',5)],
+};
+function slotsFor(sess){return (SESSDEFS[sess]||SESSDEFS.Push).map(r=>SLOTS[r.s][r.i])}
+const PROGRAMS={
+ 6:{sessions:['Push','Pull','Legs'],split:['Repos','Push','Pull','Legs','Push','Pull','Legs'],
+    cardio:['Marche légère 30 min si envie','—','Zone 2 : 30-40 min vélo/rameur','—','HIIT : 8×30s à fond / 90s easy (vélo)','—','8 000 pas + mobilité 10 min']},
+ 4:{sessions:['Upper','Lower'],split:['Repos','Upper','Lower','Repos','Upper','Lower','Repos'],
+    cardio:['Marche 30 min','—','Zone 2 : 30-40 min vélo','Zone 2 : 30 min ou repos','—','HIIT : 8×30s (vélo)','8 000 pas + mobilité']},
+ 3:{sessions:['Full A','Full B','Full C'],split:['Repos','Full A','Repos','Full B','Repos','Full C','Repos'],
+    cardio:['Repos','—','Zone 2 : 35 min vélo','—','Zone 2 : 35 min vélo','—','Marche + mobilité 20 min']},
+};
+function prog(){const d=getProfile().days||6;return PROGRAMS[d]||PROGRAMS[6]}
+function sessFor(dow){return prog().split[dow]}
+function cardioFor(dow){return prog().cardio[dow]||'—'}
+const WEAKMAP={'pecs':/Pecs/i,'dos':/Dos/i,'épaules':/Épaules|latéral/i,'bras':/Biceps|Triceps/i,'jambes':/Quadris|Fessiers|Ischios|Mollets/i};
 
 const SUPPS=[
  {t:'07:30',n:'Vitamine D3 (2000 UI) + Oméga-3 (2 g EPA/DHA)',w:'Avec le petit-déj (gras = mieux absorbé).'},
@@ -748,16 +796,18 @@ function setRing(id,pct){const e=document.getElementById(id);if(!e)return;e.styl
 /* ================== AUJOURD'HUI ================== */
 let curSession='Push';
 function renderToday(){
- const dow=new Date().getDay(),sess=SPLIT[dow],T=calcTargets();
+ const dow=new Date().getDay(),sess=sessFor(dow),T=calcTargets();
  const mi=mesoInfo();
+ renderNow(dow);
  set('weekLabel','S'+mi.w+' · '+(mi.deload?'DELOAD':'BLOC '+mi.m));
  const tEl=document.getElementById('todaySession');
  tEl.innerHTML=sess==='Repos'?'Repos <span class="acc">total</span> 😌':'Séance <span class="acc">'+sess+'</span>';
- set('todayCardio',(CARDIO[dow]&&CARDIO[dow]!=='—'?'+ Cardio : '+CARDIO[dow]:''));
+ const cdToday=cardioFor(dow);
+ set('todayCardio',(cdToday&&cdToday!=='—'?'+ Cardio : '+cdToday:''));
  set('quote','“'+pick(QUOTES)+'”');
  set('sciTip',sciTip(dow,mi));
  document.getElementById('openSessBtn').style.display=sess==='Repos'?'none':'block';
- const hasCardio=CARDIO[dow]&&CARDIO[dow]!=='—';
+ const hasCardio=cdToday&&cdToday!=='—';
  const cb=document.getElementById('cardioBtn');
  cb.style.display=hasCardio?'block':'none';
  cb.disabled=!!DB.get('cardio_'+tk(),false);
@@ -785,6 +835,10 @@ function renderToday(){
  const w=DB.get('water_'+mk,0);
  set('waterN',w);setRing('ringWater',w/10);
  set('xpToday',DB.get('xptoday_'+mk,0));
+ // forme du jour
+ const rd=DB.get('ready_'+mk,null);
+ document.querySelectorAll('#soreBtns button').forEach(b=>b.classList.toggle('on',rd&&rd.sore==+b.dataset.s));
+ if(rd){const sc=readinessScore();set('soreMsg',sc<=-1?'⚠️ Forme basse détectée : ta séance du jour est allégée automatiquement (-1 série sur les isolations). C\'est de l\'intelligence, pas de la faiblesse.':'✅ Feu vert — séance complète, va chercher tes PR.')}
  // sommeil
  renderSleepPlan();
  const sl=DB.get('sleep_'+mk,null);
@@ -804,10 +858,11 @@ function sciTip(dow,mi){
  const sl=DB.get('sleep_'+tk(),null);
  if(mi.deload)return '🔬 Semaine DELOAD : réduire le volume dissipe la fatigue et laisse la surcompensation se faire — c\'est là que les gains se matérialisent. Ne « rattrape » rien.';
  if(sl&&sl.h&&sl.h<7)return '🔬 Nuit courte ('+sl.h+' h) : la synthèse protéique et la testo en prennent un coup. Ce soir : coucher tôt, magnésium, zéro écran au lit — c\'est un vrai levier de croissance.';
- if(dow===0)return '🔬 Jour de repos : c\'est AUJOURD\'HUI que le muscle se construit (surcompensation). Mange tes 5 repas, marche un peu, dors.';
- if(dow===3||dow===6)return '🔬 Jour jambes : pas de course ni de HIIT aujourd\'hui — l\'interférence cardio est maximale sur les jambes (Schumann 2022). Le vélo tranquille reste OK demain.';
- if(dow===2)return '🔬 Zone 2 aujourd\'hui : intensité « conversation possible ». Ça développe la base cardio et la récup SANS voler tes gains (vélo > course pour l\'interférence).';
- if(dow===4)return '🔬 HIIT aujourd\'hui : court et violent (8×30 s). Garde-le sur vélo/rameur — l\'excentrique de la course fatigue les jambes pour samedi.';
+ const sToday=sessFor(dow),cdT=cardioFor(dow)||'';
+ if(sToday==='Repos'&&dow===0)return '🔬 Jour de repos : c\'est AUJOURD\'HUI que le muscle se construit (surcompensation). Mange tes 5 repas, marche un peu, dors.';
+ if(sToday==='Legs'||sToday==='Lower')return '🔬 Jour jambes : pas de course ni de HIIT aujourd\'hui — l\'interférence cardio est maximale sur les jambes (Schumann 2022). Le vélo tranquille reste OK demain.';
+ if(cdT.indexOf('Zone 2')>=0)return '🔬 Zone 2 aujourd\'hui : intensité « conversation possible ». Ça développe la base cardio et la récup SANS voler tes gains (vélo > course pour l\'interférence).';
+ if(cdT.indexOf('HIIT')>=0)return '🔬 HIIT aujourd\'hui : court et violent (8×30 s). Garde-le sur vélo/rameur — l\'excentrique de la course fatigue les jambes pour la prochaine séance.';
  const pool=[
   '🔬 Créatine : 5 g AUJOURD\'HUI aussi — l\'effet vient de la saturation musculaire, pas du timing. Tous les jours, même au repos (ISSN).',
   '🔬 Répartis tes protéines : 4-5 prises de ≥0,4 g/kg battent 2 gros repas (Schoenfeld/Aragon). Tes 5 repas sont calibrés pour ça.',
@@ -823,6 +878,76 @@ function checkProtBonus(){const mk=tk(),checks=DB.get('meals_'+mk,{}),dinIdx=(ne
 function markDay(key){const k=key+'_days';let arr=DB.get(k,[]);if(!arr.includes(tk())){arr.push(tk());DB.set(k,arr)}}
 function bumpCreat(){let arr=DB.get('creat_days',[]);if(!arr.includes(tk())){arr.push(tk());DB.set('creat_days',arr)}}
 function doCardio(){if(DB.get('cardio_'+tk(),false))return;DB.set('cardio_'+tk(),true);markDay('cardioDays');addXP(15,'Cardio fait 🚴');renderToday()}
+/* ---- Autorégulation (readiness) ---- */
+function readinessScore(){
+ const mk=tk(),sl=DB.get('sleep_'+mk,null),rd=DB.get('ready_'+mk,null);
+ let s=0;
+ if(sl&&sl.h&&sl.h<6.5)s--;
+ if(rd&&rd.sore===2)s--;
+ if(sl&&sl.h>=8&&rd&&rd.sore===0)s++;
+ return s;
+}
+document.querySelectorAll('#soreBtns button').forEach(b=>b.onclick=()=>{
+ const mk=tk(),first=!DB.get('ready_'+mk,null);
+ DB.set('ready_'+mk,{sore:+b.dataset.s});
+ if(first)addXP(5,'Forme notée 💪');
+ renderToday();
+});
+
+/* ---- Écran « Maintenant » : la prochaine action de ta journée ---- */
+function buildEvents(dow){
+ const mk=tk(),mc=DB.get('meals_'+mk,{}),sc=DB.get('supps_'+mk,{}),dinIdx=(dow+6)%7;
+ const ev=[];
+ MEALPLAN.forEach(m=>ev.push({t:m.time,label:(m.id==='m3'?'Dîner : '+DINNERS[dinIdx].t:m.n),done:!!mc[m.id],type:'meal',id:m.id}));
+ SUPPS.forEach((s,i)=>ev.push({t:s.t,label:s.n.split(':')[0],done:!!sc[i],type:'supp',id:i}));
+ const sess=sessFor(dow);
+ if(sess!=='Repos')ev.push({t:'17:30',label:'Séance '+sess+' 🏋️',done:DB.get('history',[]).some(h=>h.date===mk),type:'sess',id:''});
+ const cd=cardioFor(dow);
+ if(cd&&cd!=='—')ev.push({t:'18:45',label:'Cardio : '+cd,done:!!DB.get('cardio_'+mk,false),type:'cardio',id:''});
+ const p=getProfile(),bed=tmin(p.wake||'07:00')-(p.need||8)*60-15;
+ ev.push({t:tfmt(bed-60),label:'📵 Écrans off, lumière basse',done:false,type:'info',id:''});
+ ev.push({t:tfmt(bed),label:'🛏️ Au lit — la croissance commence',done:false,type:'info',id:''});
+ ev.sort((a,b)=>tmin(a.t)-tmin(b.t));
+ return ev;
+}
+function renderNow(dow){
+ const host=document.getElementById('nowCard');if(!host)return;
+ const ev=buildEvents(dow);
+ const now=new Date(),nm=now.getHours()*60+now.getMinutes();
+ const late=ev.filter(e=>!e.done&&e.type!=='info'&&tmin(e.t)<=nm);
+ const cur=late.length?late[late.length-1]:null;
+ const next=ev.filter(e=>tmin(e.t)>nm&&!e.done).slice(0,2);
+ let html='<h2>⚡ Maintenant</h2>';
+ if(cur){
+  html+=`<div class="disp" style="font-size:21px">${cur.label}</div><div class="note" style="margin-top:2px">prévu à ${cur.t}${late.length>1?' · '+(late.length-1)+' autre(s) en attente':''}</div>`;
+  html+=`<button class="cta" style="margin-top:11px" onclick="nowDone('${cur.type}','${cur.id}')">✓ Fait</button>`;
+ }else{
+  html+='<div class="note" style="margin:0">✅ Rien en retard. La suite :</div>';
+ }
+ next.forEach(e=>{html+=`<div class="row" style="cursor:default;min-height:42px"><span class="time">${e.t}</span><div class="t" style="font-size:13px">${e.label}</div></div>`});
+ host.innerHTML=html;
+}
+function nowDone(type,id){
+ const mk=tk();
+ if(type==='meal'){const c=DB.get('meals_'+mk,{});if(!c[id]){c[id]=true;DB.set('meals_'+mk,c);addXP(10,'Repas validé');checkProtBonus()}renderToday()}
+ else if(type==='supp'){const c=DB.get('supps_'+mk,{});if(!c[id]){c[id]=true;DB.set('supps_'+mk,c);addXP(5,'Complément pris');if(+id===2)bumpCreat()}renderToday()}
+ else if(type==='sess'){go('muscu')}
+ else if(type==='cardio'){doCardio()}
+}
+
+/* ---- Recommandation de charge du jour (double progression auto) ---- */
+function recoFor(slot,vName,mi){
+ const m=slot.rg.match(/(\d+)×(\d+)-(\d+)/);if(!m)return null;
+ const lo=+m[2],hi=+m[3];
+ const done=DB.get('exlog_'+vName,[]).filter(x=>x&&x.w&&x.r).map(x=>({w:parseFloat(x.w),r:parseInt(x.r)})).filter(x=>x.w&&x.r);
+ if(!done.length)return mi.deload?'Deload : charge légère, 3-4 reps en réserve.':'Choisis une charge qui te laisse ~'+(mi.pw<=2?'2-3':'1-2')+' reps en réserve à '+lo+'-'+hi+' reps, et note-la : elle devient ta référence.';
+ const top=done.reduce((a,b)=>b.w>a.w?b:a);
+ const lower=/Quadris|Fessiers|Ischios|Mollets/i.test(slot.lbl)||/squat|presse|terre|thrust/i.test(vName);
+ if(mi.deload)return 'Deload : ~'+(Math.round(top.w*0.6/2.5)*2.5)+' kg, séries faciles (3-4 RIR), on récupère.';
+ if(top.r>=hi){const nw=+(top.w+(lower?5:2.5)).toFixed(1);return 'Monte à '+nw+' kg × '+lo+' (haut de fourchette bouclé à '+top.w+' kg ✅)';}
+ return 'Vise '+top.w+' kg × '+(top.r+1)+' reps (double progression : les reps d\'abord, le poids ensuite)';
+}
+
 /* ---- Plan de nuit (façon RISE, calculé sans capteur) ---- */
 function tmin(s){const a=s.split(':').map(Number);return a[0]*60+a[1]}
 function tfmt(m){m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
@@ -859,28 +984,41 @@ function resetDay(){const mk=tk();['meals_','water_','supps_','protflag_','xptod
 
 /* ================== MUSCU (slots + variantes + PR) ================== */
 function selFor(sess){return DB.get('exsel_'+sess,{})}
-function variantOf(sess,slotIdx){const sel=selFor(sess)[slotIdx]||0;return SLOTS[sess][slotIdx].v[sel]}
+function variantOf(sess,slotIdx){const sel=selFor(sess)[slotIdx]||0;return slotsFor(sess)[slotIdx].v[sel]}
 function e1rm(w,r){return r>0?w*(1+r/30):w}
+function renderSeg(){
+ const segEl=document.getElementById('seg'),ss=prog().sessions;
+ if(!ss.includes(curSession))curSession=ss[0];
+ segEl.innerHTML=ss.map(s=>`<button data-s="${s}" class="${s===curSession?'on':''}">${s}</button>`).join('');
+ segEl.querySelectorAll('button').forEach(b=>b.onclick=()=>{curSession=b.dataset.s;renderMuscu()});
+}
 function renderMuscu(){
+ renderSeg();
  const mi=mesoInfo();
  set('phaseLabel',mi.name+' · S'+mi.w+(mi.deload?' (DELOAD)':''));
  set('rirCue',mi.rir+' · '+mi.vol);
  set('beastQuote',mi.why+'<br><br><i>“'+pick(BEAST)+'”</i>');
  const host=document.getElementById('exList');host.innerHTML='';
  const sel=selFor(curSession);
- SLOTS[curSession].forEach((slot,i)=>{
+ const wrx=WEAKMAP[getProfile().weak]||null;
+ const low=readinessScore()<=-1&&!mi.deload;
+ if(low){const warn=document.createElement('div');warn.className='card';warn.style.borderColor='rgba(255,107,74,.4)';warn.innerHTML='<div class="cue" style="border-color:rgba(255,107,74,.3);color:var(--coralL)">⚠️ Autorégulation active : sommeil court et/ou grosses courbatures → −1 série sur les isolations aujourd\'hui. La régularité bat l\'héroïsme.</div>';host.appendChild(warn)}
+ slotsFor(curSession).forEach((slot,i)=>{
   const vIdx=sel[i]||0, vName=slot.v[vIdx];
   const log=DB.get('exlog_'+vName,[]);
-  const nSets=parseInt(slot.rg)||3;
+  let nSets=parseInt(slot.rg)||3;
+  const focus=wrx&&wrx.test(slot.lbl);
+  if(focus&&!mi.deload)nSets++;
+  if(low&&i>=3)nSets=Math.max(2,nSets-1);
+  if(mi.deload)nSets=Math.max(2,Math.ceil(nSets/2));
   const div=document.createElement('div');div.className='ex card';
   const chips=slot.v.map((vn,k)=>`<button class="chip ${k===vIdx?'on':''}" data-slot="${i}" data-v="${k}">${vn}</button>`).join('');
   let setsHtml='';
   for(let s=0;s<nSets;s++){const pv=log[s]||{};setsHtml+=`<div class="setrow"><span class="sn">S${s+1}</span><input data-i="${i}" data-s="${s}" data-k="w" type="number" inputmode="decimal" placeholder="kg" value="${pv.w??''}"><span class="x">×</span><input data-i="${i}" data-s="${s}" data-k="r" type="number" inputmode="numeric" placeholder="reps" value="${pv.r??''}"><span class="sp"></span><button class="dn ${pv.done?'on':''}" data-i="${i}" data-s="${s}" type="button">${pv.done?'✓':''}</button></div>`}
-  const done=log.filter(x=>x&&x.w);
+  const reco=recoFor(slot,vName,mi);
   const pr=DB.get('pr_'+vName,null);
   const prTxt=pr?`<span class="prtag">PR ${pr.e1.toFixed(0)} kg e1RM</span>`:'';
-  const lastTxt=done.length?('Réf. à battre : <b>'+done.map(x=>`${x.w}×${x.r||'?'}`).join(' · ')+'</b>'+prTxt):'Première fois sur cette variante — pose ta référence 💪';
-  div.innerHTML=`<div class="slotlbl">${slot.lbl}</div><div class="hd"><span class="nm">${vName}</span><span class="rg">${slot.rg}</span></div><div class="chips">${chips}</div><div class="cue">🔥 ${slot.cue}</div><div class="sets">${setsHtml}</div><div class="last">${lastTxt}</div>`;
+  div.innerHTML=`<div class="slotlbl">${slot.lbl}${focus?' · <span style="color:var(--gold)">🎯 FOCUS</span>':''}</div><div class="hd"><span class="nm">${vName}</span><span class="rg">${slot.rg}</span></div><div class="chips">${chips}</div><div class="cue">🔥 ${slot.cue}</div>${reco?`<div class="cue" style="border-color:rgba(255,201,75,.3);color:var(--gold)">🎯 Objectif du jour : ${reco}${prTxt}</div>`:''}<div class="sets">${setsHtml}</div>`;
   host.appendChild(div);
  });
  host.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const sel=selFor(curSession);sel[c.dataset.slot]=+c.dataset.v;DB.set('exsel_'+curSession,sel);renderMuscu()});
@@ -888,13 +1026,12 @@ function renderMuscu(){
  host.querySelectorAll('.dn').forEach(d=>d.onclick=()=>{const i=+d.dataset.i,s=+d.dataset.s;const vName=variantOf(curSession,i);const log=DB.get('exlog_'+vName,[]);log[s]=log[s]||{};const was=log[s].done;log[s].done=!was;DB.set('exlog_'+vName,log);d.classList.toggle('on');d.textContent=log[s].done?'✓':'';if(!was){const heavy=i<2;startTimer(heavy?150:90);addXP(5)}});
  set('savedMsg','');
 }
-document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#seg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');curSession=b.dataset.s;renderMuscu()});
 function saveWorkout(){
  const hist=DB.get('history',[]);hist.push({date:tk(),session:curSession,ts:Date.now()});DB.set('history',hist);
  let tot=DB.get('totSess',0)+1;DB.set('totSess',tot);
  // détection de PR par variante (1RM estimé, formule d'Epley)
  let prHit=0;
- SLOTS[curSession].forEach((slot,i)=>{
+ slotsFor(curSession).forEach((slot,i)=>{
   const vName=variantOf(curSession,i);
   const log=DB.get('exlog_'+vName,[]);
   log.forEach(st=>{
@@ -923,13 +1060,29 @@ function renderRepas(){
  set('nutKcal',T.kcal);set('nutP',T.prot);set('nutC',T.carbs);set('nutF',T.fat);set('nutTdee',T.tdee);
  const mp=document.getElementById('mealPlan');mp.innerHTML='';
  MEALPLAN.forEach(m=>{
+  const ai=DB.get('mealalt_'+m.id,0);
+  const desc=ai===0||!m.alts?m.d:m.alts[ai-1];
+  const labels=['Classique','Variante A','Variante B'];
+  const chips=m.alts?`<div class="chips" style="flex-basis:100%;margin-top:7px">${labels.slice(0,(m.alts.length+1)).map((l,k)=>`<button class="chip ${k===ai?'on':''}" data-meal="${m.id}" data-a="${k}">${l}</button>`).join('')}</div>`:'';
   const r=document.createElement('div');r.className='row';r.style.cursor='default';r.style.flexWrap='wrap';
-  r.innerHTML=`<span class="time">${m.time}</span><div class="t"><span class="tt">${m.n}</span><div class="s">${m.d}</div></div><div style="text-align:right;flex:none"><div style="font-weight:900;color:var(--limeL)" class="num">${m.kcal}</div><div class="s num">${m.p} g P</div></div><div class="cue" style="flex-basis:100%;margin-top:7px">${m.why}</div>`;
+  r.innerHTML=`<span class="time">${m.time}</span><div class="t"><span class="tt">${m.n}</span><div class="s">${desc}</div></div><div style="text-align:right;flex:none"><div style="font-weight:900;color:var(--limeL)" class="num">${m.kcal}</div><div class="s num">${m.p} g P</div></div>${chips}<div class="cue" style="flex-basis:100%;margin-top:7px">${m.why}</div>`;
   mp.appendChild(r);
  });
+ mp.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{DB.set('mealalt_'+c.dataset.meal,+c.dataset.a);renderRepas()});
+ const adj=DB.get('kcalAdj',0);
+ set('adjNote',adj!==0?('🤖 Ajustement auto en cours : '+(adj>0?'+':'')+adj+' kcal/j (piloté par tes pesées)'):'🤖 Ajustement auto : 0 kcal — il s\'activera après 2 pesées espacées d\'au moins 5 jours.');
+ renderShopping();
  const dl=document.getElementById('dinList');dl.innerHTML='';
  DINNERS.forEach(m=>{const d=document.createElement('details');d.innerHTML=`<summary><span><span class="dday">${m.d}</span> · ${m.t}</span><span class="time">${m.kcal} kcal</span></summary><div class="recipe2"><b>Ingrédients</b><br>${m.ing}<br><br><b>Préparation</b><br>${m.steps}<br><br><span class="pill">${m.p} g protéines</span></div>`;dl.appendChild(d)});
  document.getElementById('staples').innerHTML=STAPLES.map(s=>`<span class="pill">${s}</span>`).join('');
+}
+function renderShopping(){
+ const h=document.getElementById('shopList');if(!h)return;
+ h.innerHTML=SHOPPING.map(c=>`<div class="mealhd">${c[0]}</div>`+c[1].map(i=>`<span class="pill">${i}</span>`).join('')).join('');
+}
+function copyShopping(){
+ const txt='Courses BEAST — semaine :\n\n'+SHOPPING.map(c=>c[0]+'\n'+c[1].map(i=>'· '+i).join('\n')).join('\n\n');
+ try{navigator.clipboard.writeText(txt);toast('📋 Liste copiée !')}catch(e){toast('Copie impossible ici — fais-la depuis ton tél')}
 }
 
 /* ================== PLAN ================== */
@@ -948,6 +1101,12 @@ function renderPlan(){
   ml.innerHTML+=`<div class="meso ${st}"><div class="mnum">${i+1<mi.m?'✓':'B'+(i+1)}</div><div class="mt"><div class="mn">${m[0]}</div><div class="md">${m[1]}</div></div></div>`;
  });
  document.getElementById('pfW').value=p.w;document.getElementById('pfH').value=p.h;document.getElementById('pfA').value=p.age;
+ document.getElementById('pfD').value=String(p.days||6);document.getElementById('pfWk').value=p.weak||'équilibré';
+ const DAYN=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+ let rows='';
+ for(let k=1;k<=7;k++){const dow=k%7,s=sessFor(dow),c=cardioFor(dow);
+  rows+=`<tr><td>${DAYN[dow]}</td><td>${s==='Repos'?'REPOS':s.toUpperCase()}${c&&c!=='—'?`<div class="cd">+ ${c}</div>`:''}</td></tr>`}
+ document.getElementById('weekTbl').innerHTML=rows;
  const sc=document.getElementById('sciList');sc.innerHTML='';
  const cats=[];SCI.forEach(s=>{if(!cats.includes(s[0]))cats.push(s[0])});
  cats.forEach(cat=>{
@@ -958,14 +1117,35 @@ function renderPlan(){
 function saveProfile(){
  const w=parseFloat(document.getElementById('pfW').value),h=parseFloat(document.getElementById('pfH').value),a=parseFloat(document.getElementById('pfA').value);
  if(!w||!h||!a)return;
- const p=getProfile();p.w=w;p.h=h;p.age=a;DB.set('profile',p);
+ const p=getProfile();p.w=w;p.h=h;p.age=a;
+ p.days=+document.getElementById('pfD').value||6;
+ p.weak=document.getElementById('pfWk').value||'équilibré';
+ DB.set('profile',p);
+ if(!prog().sessions.includes(curSession))curSession=prog().sessions[0];
  const T=calcTargets();
- set('pfMsg','✅ Nouvelles cibles : '+T.kcal+' kcal · '+T.prot+' g prot · '+T.carbs+' g gluc · '+T.fat+' g lip (TDEE '+T.tdee+')');
- toast('Objectifs recalculés 🎯');renderRepas();renderToday();
+ set('pfMsg','✅ Nouvelles cibles : '+T.kcal+' kcal · '+T.prot+' g prot · '+T.carbs+' g gluc · '+T.fat+' g lip (TDEE '+T.tdee+') — split : '+prog().sessions.join(' / '));
+ toast('Programme & objectifs recalculés 🎯');renderRepas();renderToday();renderPlan();
 }
 
 /* ================== PROGRÈS ================== */
-function addWeight(){const v=parseFloat(document.getElementById('wIn').value);if(!v)return;const arr=DB.get('weights',[]);arr.push({d:tk(),v});DB.set('weights',arr);document.getElementById('wIn').value='';addXP(10,'Poids enregistré');drawChart();renderProg()}
+function addWeight(){const v=parseFloat(document.getElementById('wIn').value);if(!v)return;const arr=DB.get('weights',[]);arr.push({d:tk(),v});DB.set('weights',arr);document.getElementById('wIn').value='';addXP(10,'Poids enregistré');autoAdjust();drawChart();renderProg()}
+/* Ajustement calorique hebdo automatique : la pesée pilote le surplus (cible +0,25-0,5 %/sem) */
+function autoAdjust(){
+ const pd=s=>new Date(String(s).replace(/-/g,'/'));
+ const arr=DB.get('weights',[]);if(arr.length<2)return;
+ const last=arr[arr.length-1];
+ let prev=null;
+ for(let i=arr.length-2;i>=0;i--){if((pd(last.d)-pd(arr[i].d))/864e5>=5){prev=arr[i];break}}
+ if(!prev)return;
+ const days=(pd(last.d)-pd(prev.d))/864e5;
+ const rate=((last.v-prev.v)/prev.v)*(7/days)*100;
+ const la=DB.get('lastAdj',null);
+ if(la&&(new Date()-pd(la))/864e5<6)return;
+ let adj=DB.get('kcalAdj',0);
+ if(rate<0.2&&adj<450){adj+=150;DB.set('kcalAdj',adj);DB.set('lastAdj',tk());setTimeout(()=>toast('🤖 Prise trop lente ('+rate.toFixed(2)+' %/sem) → +150 kcal/j'),800)}
+ else if(rate>0.55&&adj>-450){adj-=150;DB.set('kcalAdj',adj);DB.set('lastAdj',tk());setTimeout(()=>toast('🤖 Prise trop rapide ('+rate.toFixed(2)+' %/sem) → −150 kcal/j'),800)}
+ renderRepas();renderToday();
+}
 function saveMeas(){
  const b=parseFloat(document.getElementById('msB').value),po=parseFloat(document.getElementById('msP').value),t=parseFloat(document.getElementById('msT').value),c=parseFloat(document.getElementById('msC').value);
  if(!b&&!po&&!t&&!c)return;
