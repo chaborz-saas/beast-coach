@@ -977,6 +977,7 @@ function saveSleepPrefs(){
  const w=document.getElementById('slWake').value,n=parseFloat(document.getElementById('slNeed').value);
  if(!w||!n)return;const p=getProfile();p.wake=w;p.need=n;DB.set('profile',p);
  toast('Plan de nuit recalculé 😴');renderToday();
+ if(window.Capacitor)nativeNotifSetup();
 }
 function logSleep(){const v=parseFloat(document.getElementById('slIn').value);if(!v)return;const mk=tk();const cur=DB.get('sleep_'+mk,null);const q=cur?cur.q:3;const first=!cur;DB.set('sleep_'+mk,{h:v,q});if(first){addXP(10,'Sommeil noté 😴');markDay('sleepDays')}renderToday()}
 document.querySelectorAll('#qbtns button').forEach(b=>b.onclick=()=>{const mk=tk();const cur=DB.get('sleep_'+mk,null)||{h:parseFloat(document.getElementById('slIn').value)||7,q:3};const first=!DB.get('sleep_'+mk,null);cur.q=+b.dataset.q;DB.set('sleep_'+mk,cur);if(first){addXP(10,'Sommeil noté 😴');markDay('sleepDays')}renderToday()});
@@ -1125,6 +1126,7 @@ function saveProfile(){
  const T=calcTargets();
  set('pfMsg','✅ Nouvelles cibles : '+T.kcal+' kcal · '+T.prot+' g prot · '+T.carbs+' g gluc · '+T.fat+' g lip (TDEE '+T.tdee+') — split : '+prog().sessions.join(' / '));
  toast('Programme & objectifs recalculés 🎯');renderRepas();renderToday();renderPlan();
+ if(window.Capacitor)nativeNotifSetup();
 }
 
 /* ================== PROGRÈS ================== */
@@ -1222,10 +1224,39 @@ function enableNotifs(){if(!('Notification'in window)){toast('Notifs non support
 let notifTimers=[];
 function scheduleNotifs(){notifTimers.forEach(clearTimeout);notifTimers=[];if(!DB.get('notifs',false))return;const now=new Date();SUPPS.forEach(s=>{const[h,m]=s.t.split(':').map(Number);const t=new Date();t.setHours(h,m,0,0);let delay=t-now;if(delay<0)delay+=864e5;if(delay<864e5)notifTimers.push(setTimeout(()=>{try{new Notification('💊 '+s.n,{body:s.w})}catch(e){}},delay))})}
 
+/* ================== NATIF (APK) : notifications locales exactes ================== */
+function CapLN(){return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications}
+async function nativeNotifSetup(){
+ const LN=CapLN();if(!LN)return;
+ try{
+  const perm=await LN.requestPermissions();
+  if(!perm||perm.display!=='granted')return;
+  const pend=await LN.getPending();
+  if(pend&&pend.notifications&&pend.notifications.length)await LN.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
+  const p=getProfile(),bed=tmin(p.wake||'07:00')-(p.need||8)*60-15;
+  const HH=mm=>{const m=((mm%1440)+1440)%1440;return{hour:Math.floor(m/60),minute:m%60}};
+  const N=[];
+  const daily=[
+   [101,'07:30','🍳 Petit-déj de masse','45 g de protéines + D3 & oméga-3. La machine démarre.'],
+   [102,'12:30','🍚 Déjeuner builder','Riz + viande + légumes : le glycogène de ta séance.'],
+   [103,'16:45','⚡ Pré-training','Caféine + citrulline. Séance dans 45 min.'],
+   [104,'19:00','🥤 Whey + créatine 5 g','Tous les jours, même repos.'],
+   [105,'20:00','🍽️ Dîner du jour','Ta recette du soir est prête dans BEAST.'],
+   [108,'22:00','💊 Magnésium','Sommeil & récup : le muscle pousse la nuit.'],
+  ];
+  daily.forEach(d=>N.push({id:d[0],title:d[2],body:d[3],schedule:{on:HH(tmin(d[1])),repeats:true,allowWhileIdle:true}}));
+  N.push({id:106,title:'📵 Écrans off, lumière basse',body:'Fenêtre mélatonine — ton coucher est dans 1 h.',schedule:{on:HH(bed-60),repeats:true,allowWhileIdle:true}});
+  N.push({id:107,title:'🛏️ Au lit',body:'La croissance commence maintenant. Bonne nuit la bête.',schedule:{on:HH(bed),repeats:true,allowWhileIdle:true}});
+  for(let dow=0;dow<7;dow++){const s=sessFor(dow);if(s!=='Repos'){N.push({id:200+dow,title:'🏋️ Séance '+s,body:'Tes objectifs de charge sont prêts. On y va.',schedule:{on:{weekday:dow+1,hour:17,minute:30},repeats:true,allowWhileIdle:true}})}}
+  await LN.schedule({notifications:N});
+  DB.set('nativeNotifs',N.length);
+ }catch(e){}
+}
 /* ================== INIT ================== */
 renderHeader();renderToday();renderRepas();renderProg();
-if(DB.get('notifs',false))scheduleNotifs();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(DB.get('notifs',false)&&!window.Capacitor)scheduleNotifs();
+if('serviceWorker'in navigator&&!window.Capacitor)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(window.Capacitor)setTimeout(nativeNotifSetup,1200);
 </script>
 </body>
 </html>
