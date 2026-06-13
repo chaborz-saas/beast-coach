@@ -289,6 +289,7 @@
     <div class="ey">Mission du jour<span class="wkchip" id="weekLabel"></span></div>
     <div class="disp mtitle" id="todaySession">—</div>
     <div class="cardio" id="todayCardio"></div>
+    <div class="cue" id="sciTip" style="margin-top:10px"></div>
     <div class="quote" id="quote"></div>
     <button class="cta" style="margin-top:14px" id="openSessBtn" onclick="go('muscu')">Ouvrir la séance →</button>
     <button class="cta ghost" style="margin-top:8px;display:none" id="cardioBtn" onclick="doCardio()">✓ Cardio du jour fait (+15 XP)</button>
@@ -328,7 +329,14 @@
   </div>
 
   <div class="card">
-    <h2>😴 Sommeil de la nuit</h2>
+    <h2>😴 Sommeil — ton plan de nuit</h2>
+    <div id="sleepPlan"></div>
+    <div class="grid2" style="margin-top:12px">
+      <div><div class="lbl" style="margin-bottom:5px">Réveil cible</div><div class="winput"><input id="slWake" type="time" value="07:00"></div></div>
+      <div><div class="lbl" style="margin-bottom:5px">Besoin (h)</div><div class="winput"><input id="slNeed" type="number" inputmode="decimal" step="0.5" min="6" max="10" value="8"></div></div>
+    </div>
+    <button class="cta ghost" style="margin-top:8px" onclick="saveSleepPrefs()">💾 Recalculer mon plan de nuit</button>
+    <div class="mealhd" style="margin-top:14px">Nuit dernière</div>
     <div class="winput">
       <input id="slIn" type="number" inputmode="decimal" step="0.5" min="0" max="14" placeholder="heures dormies, ex. 7.5">
       <button class="cta" style="flex:none;width:auto;padding:0 16px" onclick="logSleep()">OK</button>
@@ -532,15 +540,20 @@ function calcTargets(){
 /* ================== NUTRITION : 5 REPAS (≈3300 kcal / ≈190 g prot) ================== */
 const MEALPLAN=[
  {id:'m0',time:'07:30',n:'Petit-déj de masse',kcal:780,p:45,
-  d:"100 g flocons d'avoine + 250 g skyr + 1 banane + 20 g amandes + 15 g miel"},
+  d:"100 g flocons d'avoine + 250 g skyr + 1 banane + 20 g amandes + 15 g miel",
+  why:"🔬 45 g de protéines (≈0,55 g/kg) : relance la synthèse protéique après le jeûne de la nuit — 1ʳᵉ des 4-5 prises de ≥0,4 g/kg (Schoenfeld/Aragon)."},
  {id:'m1',time:'12:30',n:'Déjeuner builder',kcal:900,p:50,
-  d:"120 g riz basmati (cru) + 180 g poulet (ou bœuf 5%) + légumes à volonté + 12 g huile d'olive"},
+  d:"120 g riz basmati (cru) + 180 g poulet (ou bœuf 5%) + légumes à volonté + 12 g huile d'olive",
+  why:"🔬 Le plus gros bloc de glucides à midi : il recharge le glycogène pour la séance du soir — les glucides sont le carburant de la performance."},
  {id:'m2',time:'17:00',n:'Pré/post-training shake',kcal:620,p:38,
-  d:"30 g whey + 70 g avoine mixée + 1 banane + 20 g beurre de cacahuète (shaker)"},
+  d:"30 g whey + 70 g avoine mixée + 1 banane + 20 g beurre de cacahuète (shaker)",
+  why:"🔬 Protéines + glucides autour de l'effort = perf et récup. Pas de panique sur la « fenêtre anabolique » : elle dure des heures, c'est le total du jour qui prime."},
  {id:'m3',time:'20:00',n:'Dîner du jour',kcal:800,p:50,
-  d:"La recette du soir (voir liste) — base 120 g riz/féculent cru + 200 g viande"},
+  d:"La recette du soir (voir liste) — base 120 g riz/féculent cru + 200 g viande",
+  why:"🔬 Repas complet post-training : 50 g de protéines + glucides pour la resynthèse du glycogène et la construction pendant la soirée."},
  {id:'m4',time:'22:15',n:'Caséine du soir',kcal:380,p:25,
-  d:"250 g fromage blanc + 100 g fruits rouges + 15 g noix — protéine lente pour la nuit"},
+  d:"250 g fromage blanc + 100 g fruits rouges + 15 g noix — protéine lente pour la nuit",
+  why:"🔬 Protéine lente avant le coucher (Res 2012) : la synthèse protéique reste alimentée pendant les 7-9 h de sommeil — la nuit est ta plus longue fenêtre de croissance."},
 ];
 const DINNERS=[
  {d:'Lun',t:'Poulet teriyaki XL, riz & brocolis',kcal:800,p:52,
@@ -662,6 +675,7 @@ const SCI=[
 
  // RÉCUPÉRATION & MODE DE VIE
  ['😴 Récup & vie','Sommeil 7-9 h : non négociable','La privation de sommeil réduit la synthèse protéique, augmente le cortisol et baisse la testostérone (Leproult 2011). C\'est un "anabolisant" gratuit. APPLI : tracking sommeil + alerte sous 7h.'],
+ ['😴 Récup & vie','Caféine : stop ~9 h avant le coucher','Demi-vie ~5 h : un café à 17 h laisse encore ~25 % de caféine dans le sang à 23 h et dégrade le sommeil profond (Drake 2013). APPLI : ton plan de nuit affiche l\'heure exacte de ton dernier café.'],
  ['😴 Récup & vie','Le muscle pousse au REPOS','La séance crée le stimulus ; la croissance se fait pendant la récupération. Sans récup suffisante, pas de surcompensation. APPLI : 1 jour off complet (dimanche) + deload programmé.'],
  ['😴 Récup & vie','Gérer le stress (cortisol chronique)','Un stress chronique élevé nuit à la récup et à la composition corporelle. APPLI : ashwagandha optionnel, sommeil, marche — tout est dans l\'app.'],
  ['😴 Récup & vie','Hydratation','La déshydratation baisse force et performance. APPLI : objectif 10 verres/jour tracké (anneau eau).'],
@@ -681,7 +695,14 @@ function mesoInfo(){
  const names=['Fondation','Hypertrophie I','Hypertrophie II','Intensification'];
  const rirs=['RIR 2-3 — technique parfaite','RIR 2 — on charge','RIR 1-2 — ça devient sérieux','RIR 0-1 — échec sur les isolations','DELOAD — RIR 4, volume ÷2'];
  const sets=['~12 séries/muscle','~14 séries/muscle','~16 séries/muscle','~18 séries/muscle','~8 séries/muscle'];
- return {w,m,pw,name:w>20?'Cycle bonus':names[m-1],rir:rirs[pw-1],vol:sets[pw-1],deload:pw===5};
+ const whys=[
+  '🔬 Pourquoi : loin de l\'échec, la croissance est quasi identique mais la fatigue chute (Refalo 2023). On encaisse le volume à venir et on grave la technique.',
+  '🔬 Pourquoi : le volume monte — c\'est LA variable dose-réponse de l\'hypertrophie (Pelland 2024). Les charges suivent la double progression.',
+  '🔬 Pourquoi : on se rapproche de l\'échec pour maximiser le recrutement des fibres rapides, en gardant la fatigue sous contrôle.',
+  '🔬 Pourquoi : semaine pic — stimulus maximal. L\'échec UNIQUEMENT sur les isolations : sur les gros mouvements il coûte plus qu\'il ne rapporte.',
+  '🔬 Pourquoi : le muscle pousse pendant la RÉCUP, pas pendant la séance. On dissipe la fatigue accumulée pour surcompenser et repartir plus fort.',
+ ];
+ return {w,m,pw,name:w>20?'Cycle bonus':names[m-1],rir:rirs[pw-1],vol:sets[pw-1],why:whys[pw-1],deload:pw===5};
 }
 function pick(arr){const i=((daysSinceStart()%arr.length)+arr.length)%arr.length;return arr[i]}
 
@@ -734,6 +755,7 @@ function renderToday(){
  tEl.innerHTML=sess==='Repos'?'Repos <span class="acc">total</span> 😌':'Séance <span class="acc">'+sess+'</span>';
  set('todayCardio',(CARDIO[dow]&&CARDIO[dow]!=='—'?'+ Cardio : '+CARDIO[dow]:''));
  set('quote','“'+pick(QUOTES)+'”');
+ set('sciTip',sciTip(dow,mi));
  document.getElementById('openSessBtn').style.display=sess==='Repos'?'none':'block';
  const hasCardio=CARDIO[dow]&&CARDIO[dow]!=='—';
  const cb=document.getElementById('cardioBtn');
@@ -764,6 +786,7 @@ function renderToday(){
  set('waterN',w);setRing('ringWater',w/10);
  set('xpToday',DB.get('xptoday_'+mk,0));
  // sommeil
+ renderSleepPlan();
  const sl=DB.get('sleep_'+mk,null);
  document.querySelectorAll('#qbtns button').forEach(b=>b.classList.toggle('on',sl&&sl.q==+b.dataset.q));
  if(sl){document.getElementById('slIn').value=sl.h;set('sleepMsg',sl.h>=7?'✅ '+sl.h+' h — la machine à muscle a tourné cette nuit.':'⚠️ '+sl.h+' h — sous les 7 h, tu laisses des gains sur la table. Couche-toi plus tôt ce soir.')}
@@ -776,11 +799,60 @@ function renderToday(){
  });
 }
 function set(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v}
+/* Conseil scientifique contextuel du jour (priorité : deload > sommeil court > contexte du jour > rotation) */
+function sciTip(dow,mi){
+ const sl=DB.get('sleep_'+tk(),null);
+ if(mi.deload)return '🔬 Semaine DELOAD : réduire le volume dissipe la fatigue et laisse la surcompensation se faire — c\'est là que les gains se matérialisent. Ne « rattrape » rien.';
+ if(sl&&sl.h&&sl.h<7)return '🔬 Nuit courte ('+sl.h+' h) : la synthèse protéique et la testo en prennent un coup. Ce soir : coucher tôt, magnésium, zéro écran au lit — c\'est un vrai levier de croissance.';
+ if(dow===0)return '🔬 Jour de repos : c\'est AUJOURD\'HUI que le muscle se construit (surcompensation). Mange tes 5 repas, marche un peu, dors.';
+ if(dow===3||dow===6)return '🔬 Jour jambes : pas de course ni de HIIT aujourd\'hui — l\'interférence cardio est maximale sur les jambes (Schumann 2022). Le vélo tranquille reste OK demain.';
+ if(dow===2)return '🔬 Zone 2 aujourd\'hui : intensité « conversation possible ». Ça développe la base cardio et la récup SANS voler tes gains (vélo > course pour l\'interférence).';
+ if(dow===4)return '🔬 HIIT aujourd\'hui : court et violent (8×30 s). Garde-le sur vélo/rameur — l\'excentrique de la course fatigue les jambes pour samedi.';
+ const pool=[
+  '🔬 Créatine : 5 g AUJOURD\'HUI aussi — l\'effet vient de la saturation musculaire, pas du timing. Tous les jours, même au repos (ISSN).',
+  '🔬 Répartis tes protéines : 4-5 prises de ≥0,4 g/kg battent 2 gros repas (Schoenfeld/Aragon). Tes 5 repas sont calibrés pour ça.',
+  '🔬 Surcharge progressive : aujourd\'hui tu bats UNE rep ou UN kilo quelque part. C\'est la seule loi non négociable de la croissance.',
+  '🔬 Étirement sous charge : descends PROFOND sur tes exos (curl incliné, RDL, presse) — la position étirée est là où le muscle pousse le plus.',
+  '🔬 Sur les isolations, pense au muscle qui travaille (mind-muscle, Schoenfeld 2018) : +activation, +croissance locale.',
+  '🔬 Hydratation : même 2 % de déshydratation fait chuter ta force. Vise tes 10 verres.',
+ ];
+ return pick(pool);
+}
 function water(n){const mk=tk();let w=Math.max(0,DB.get('water_'+mk,0)+n);DB.set('water_'+mk,w);set('waterN',w);setRing('ringWater',w/10);if(n>0){addXP(3);if(w===10){addXP(15,'Hydratation 💧 objectif');markDay('waterDays')}}}
 function checkProtBonus(){const mk=tk(),checks=DB.get('meals_'+mk,{}),dinIdx=(new Date().getDay()+6)%7,T=calcTargets();let prot=0;MEALPLAN.forEach(m=>{if(checks[m.id])prot+=(m.id==='m3'?DINNERS[dinIdx].p:m.p)});if(prot>=T.prot&&!DB.get('protflag_'+mk,false)){DB.set('protflag_'+mk,true);addXP(30,'🥩 Objectif protéines !');markDay('protDays')}}
 function markDay(key){const k=key+'_days';let arr=DB.get(k,[]);if(!arr.includes(tk())){arr.push(tk());DB.set(k,arr)}}
 function bumpCreat(){let arr=DB.get('creat_days',[]);if(!arr.includes(tk())){arr.push(tk());DB.set('creat_days',arr)}}
 function doCardio(){if(DB.get('cardio_'+tk(),false))return;DB.set('cardio_'+tk(),true);markDay('cardioDays');addXP(15,'Cardio fait 🚴');renderToday()}
+/* ---- Plan de nuit (façon RISE, calculé sans capteur) ---- */
+function tmin(s){const a=s.split(':').map(Number);return a[0]*60+a[1]}
+function tfmt(m){m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+function sleepDebt14(){
+ const p=getProfile(),need=p.need||8;let debt=0;const d=new Date();d.setDate(d.getDate()-1);
+ for(let i=0;i<14;i++){const k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();const s=DB.get('sleep_'+k,null);if(s&&s.h)debt+=Math.max(0,need-s.h);d.setDate(d.getDate()-1)}
+ return debt;
+}
+function renderSleepPlan(){
+ const p=getProfile(),wake=p.wake||'07:00',need=p.need||8,wkm=tmin(wake),bed=wkm-need*60-15;
+ const lines=[
+  ['🛏️','Au lit à','<b>'+tfmt(bed)+'</b> — réveil '+wake+' − '+need+' h − 15 min d\'endormissement'],
+  ['☕','Dernier café','<b>'+tfmt(bed-9*60)+'</b> — la caféine traîne ~9 h dans le sang (Drake 2013)'],
+  ['📵','Écrans off, lumière basse','<b>'+tfmt(bed-60)+'</b> — fenêtre mélatonine'],
+  ['🏋️','Pic de perf (ta séance)','<b>'+tfmt(wkm+600)+'–'+tfmt(wkm+720)+'</b> — sommet circadien ≈ 10-12 h après le réveil'],
+  ['🥱','Creux d\'énergie','<b>'+tfmt(wkm+390)+'–'+tfmt(wkm+480)+'</b> — sieste 20 min max si besoin'],
+ ];
+ const debt=sleepDebt14();
+ const host=document.getElementById('sleepPlan');
+ if(host)host.innerHTML=lines.map(l=>`<div class="row" style="cursor:default;min-height:44px"><span style="font-size:18px;flex:none">${l[0]}</span><div class="t">${l[1]} : ${l[2]}</div></div>`).join('')
+  +`<div class="xpchip" style="margin-top:10px">${debt>0.5?'⏳ Dette de sommeil 14 j : '+debt.toFixed(1)+' h — rattrape avec +30-60 min/nuit':'✅ Pas de dette de sommeil — machine optimale'}</div>`;
+ const wEl=document.getElementById('slWake'),nEl=document.getElementById('slNeed');
+ if(wEl&&document.activeElement!==wEl)wEl.value=wake;
+ if(nEl&&document.activeElement!==nEl)nEl.value=need;
+}
+function saveSleepPrefs(){
+ const w=document.getElementById('slWake').value,n=parseFloat(document.getElementById('slNeed').value);
+ if(!w||!n)return;const p=getProfile();p.wake=w;p.need=n;DB.set('profile',p);
+ toast('Plan de nuit recalculé 😴');renderToday();
+}
 function logSleep(){const v=parseFloat(document.getElementById('slIn').value);if(!v)return;const mk=tk();const cur=DB.get('sleep_'+mk,null);const q=cur?cur.q:3;const first=!cur;DB.set('sleep_'+mk,{h:v,q});if(first){addXP(10,'Sommeil noté 😴');markDay('sleepDays')}renderToday()}
 document.querySelectorAll('#qbtns button').forEach(b=>b.onclick=()=>{const mk=tk();const cur=DB.get('sleep_'+mk,null)||{h:parseFloat(document.getElementById('slIn').value)||7,q:3};const first=!DB.get('sleep_'+mk,null);cur.q=+b.dataset.q;DB.set('sleep_'+mk,cur);if(first){addXP(10,'Sommeil noté 😴');markDay('sleepDays')}renderToday()});
 function resetDay(){const mk=tk();['meals_','water_','supps_','protflag_','xptoday_','sleep_','cardio_'].forEach(p=>localStorage.removeItem(p+mk));document.getElementById('slIn').value='';renderToday()}
@@ -793,7 +865,7 @@ function renderMuscu(){
  const mi=mesoInfo();
  set('phaseLabel',mi.name+' · S'+mi.w+(mi.deload?' (DELOAD)':''));
  set('rirCue',mi.rir+' · '+mi.vol);
- set('beastQuote','“'+pick(BEAST)+'”');
+ set('beastQuote',mi.why+'<br><br><i>“'+pick(BEAST)+'”</i>');
  const host=document.getElementById('exList');host.innerHTML='';
  const sel=selFor(curSession);
  SLOTS[curSession].forEach((slot,i)=>{
@@ -851,8 +923,8 @@ function renderRepas(){
  set('nutKcal',T.kcal);set('nutP',T.prot);set('nutC',T.carbs);set('nutF',T.fat);set('nutTdee',T.tdee);
  const mp=document.getElementById('mealPlan');mp.innerHTML='';
  MEALPLAN.forEach(m=>{
-  const r=document.createElement('div');r.className='row';r.style.cursor='default';
-  r.innerHTML=`<span class="time">${m.time}</span><div class="t"><span class="tt">${m.n}</span><div class="s">${m.d}</div></div><div style="text-align:right;flex:none"><div style="font-weight:900;color:var(--limeL)" class="num">${m.kcal}</div><div class="s num">${m.p} g P</div></div>`;
+  const r=document.createElement('div');r.className='row';r.style.cursor='default';r.style.flexWrap='wrap';
+  r.innerHTML=`<span class="time">${m.time}</span><div class="t"><span class="tt">${m.n}</span><div class="s">${m.d}</div></div><div style="text-align:right;flex:none"><div style="font-weight:900;color:var(--limeL)" class="num">${m.kcal}</div><div class="s num">${m.p} g P</div></div><div class="cue" style="flex-basis:100%;margin-top:7px">${m.why}</div>`;
   mp.appendChild(r);
  });
  const dl=document.getElementById('dinList');dl.innerHTML='';
